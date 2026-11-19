@@ -1,0 +1,98 @@
+name: Publish portfolio to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout approved bundle
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Verify and unpack website
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path, PurePosixPath
+          import hashlib, json, re, stat, zipfile
+
+          root = Path.cwd().resolve()
+          manifest = json.loads((root / "bundle-manifest.json").read_text(encoding="utf-8"))
+          if manifest["version"] != 1 or not manifest["parts"]:
+              raise RuntimeError("Unsupported or empty bundle manifest")
+          assembled = root / "verified-website.zip"
+          overall = hashlib.sha256()
+          total = 0
+          with assembled.open("wb") as destination:
+              for index, part in enumerate(manifest["parts"], 1):
+                  expected_name = f"bundle/part-{index:04d}.bin"
+                  if part["file"] != expected_name:
+                      raise RuntimeError("Part order or path is invalid")
+                  source = root / part["file"]
+                  if source.is_symlink() or not source.resolve().is_relative_to(root / "bundle"):
+                      raise RuntimeError("Unsafe bundle part")
+                  data = source.read_bytes()
+                  if len(data) != part["bytes"] or hashlib.sha256(data).hexdigest() != part["sha256"]:
+                      raise RuntimeError(f"Part checksum mismatch: {part['file']}")
+                  destination.write(data)
+                  overall.update(data)
+                  total += len(data)
+          if total != manifest["zipBytes"] or overall.hexdigest() != manifest["zipSHA256"]:
+              raise RuntimeError("Assembled ZIP checksum mismatch")
+
+          output = root / "_site"
+          output.mkdir(exist_ok=False)
+          allowed = {".html", ".css", ".js", ".json", ".svg", ".txt", ".webp", ".jpg", ".mp4"}
+          with zipfile.ZipFile(assembled) as archive:
+              members = archive.infolist()
+              if len(members) != manifest["fileCount"] or sum(item.file_size for item in members) != manifest["uncompressedBytes"]:
+                  raise RuntimeError("Archive inventory mismatch")
+              seen = set()
+              for item in members:
+                  relative = PurePosixPath(item.filename)
+                  if relative.is_absolute() or ".." in relative.parts or "\\" in item.filename or ":" in item.filename:
+                      raise RuntimeError("Unsafe archive path")
+                  if item.is_dir() or stat.S_ISLNK(item.external_attr >> 16) or item.filename in seen:
+                      raise RuntimeError("Unexpected directory, link, or duplicate entry")
+                  if item.filename != ".nojekyll" and relative.suffix.lower() not in allowed:
+                      raise RuntimeError("Non-web source file in archive")
+                  seen.add(item.filename)
+                  target = output.joinpath(*relative.parts)
+                  if not target.resolve().is_relative_to(output):
+                      raise RuntimeError("Archive path escapes output")
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(archive.read(item))
+          if not (output / "index.html").is_file():
+              raise RuntimeError("Missing website homepage")
+          print(f"Verified {len(members)} website files from {len(manifest['parts'])} parts.")
+          PY
+      - name: Upload verified site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy site
+        id: deployment
+        uses: actions/deploy-pages@v4
