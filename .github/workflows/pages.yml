@@ -81,6 +81,91 @@ jobs:
               raise RuntimeError("Missing website homepage")
           print(f"Verified {len(members)} website files from {len(manifest['parts'])} parts.")
           PY
+      - name: Verify and apply cumulative website update
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path, PurePosixPath
+          import hashlib, json, re, stat, zipfile
+          
+          root = Path.cwd().resolve()
+          output = root / "_site"
+          manifest = json.loads((root / "update-manifest.json").read_text(encoding="utf-8"))
+          base = json.loads((root / "bundle-manifest.json").read_text(encoding="utf-8"))
+          if manifest["version"] != 1 or manifest["baseZipSHA256"] != base["zipSHA256"]:
+              raise RuntimeError("Update does not match the verified base bundle")
+          allowed = {".html", ".css", ".js", ".json", ".svg", ".txt", ".webp", ".jpg", ".mp4", ".woff2"}
+          
+          def destination(name):
+              relative = PurePosixPath(name)
+              if not name or relative.is_absolute() or ".." in relative.parts or "\\" in name or ":" in name:
+                  raise RuntimeError("Unsafe update path")
+              if name != ".nojekyll" and relative.suffix.lower() not in allowed:
+                  raise RuntimeError("Non-web file in update")
+              target = output.joinpath(*relative.parts)
+              if target.is_symlink() or not target.resolve().is_relative_to(output):
+                  raise RuntimeError("Update path escapes website")
+              return target
+          
+          def canonical(value):
+              return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          
+          if hashlib.sha256(canonical(manifest["finalFiles"])).hexdigest() != manifest["finalFilesSHA256"]:
+              raise RuntimeError("Final file manifest checksum mismatch")
+          parts = manifest["parts"]
+          if not parts:
+              raise RuntimeError("Missing update ZIP")
+          assembled = root / "verified-update.zip"
+          overall = hashlib.sha256()
+          total = 0
+          with assembled.open("wb") as destination_file:
+              for index, part in enumerate(parts, 1):
+                  if part["file"] != f"updates/part-{index:04d}.bin":
+                      raise RuntimeError("Update part order or path is invalid")
+                  source = root / part["file"]
+                  if source.is_symlink() or not source.resolve().is_relative_to(root / "updates"):
+                      raise RuntimeError("Unsafe update part")
+                  data = source.read_bytes()
+                  if len(data) != part["bytes"] or len(data) > 4 * 1024 * 1024 or hashlib.sha256(data).hexdigest() != part["sha256"]:
+                      raise RuntimeError("Update part checksum mismatch")
+                  destination_file.write(data)
+                  overall.update(data)
+                  total += len(data)
+          if total != manifest["zipBytes"] or overall.hexdigest() != manifest["zipSHA256"]:
+              raise RuntimeError("Update ZIP checksum mismatch")
+          changed = manifest["changedFiles"]
+          deleted = manifest["deletedFiles"]
+          if len(set(changed)) != len(changed) or len(set(deleted)) != len(deleted) or set(changed) & set(deleted):
+              raise RuntimeError("Invalid changed/deleted file inventory")
+          for name in deleted:
+              target = destination(name)
+              if not target.is_file():
+                  raise RuntimeError("Deleted file is not in the base website")
+              target.unlink()
+          with zipfile.ZipFile(assembled) as archive:
+              members = archive.infolist()
+              if sorted(item.filename for item in members) != sorted(changed):
+                  raise RuntimeError("Update archive inventory mismatch")
+              for item in members:
+                  if item.is_dir() or stat.S_ISLNK(item.external_attr >> 16):
+                      raise RuntimeError("Unexpected directory or link in update")
+                  target = destination(item.filename)
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(archive.read(item))
+          actual = []
+          for source in sorted(output.rglob("*")):
+              if source.is_symlink() or not source.resolve().is_relative_to(output):
+                  raise RuntimeError("Unsafe final website file")
+              if source.is_file():
+                  data = source.read_bytes()
+                  actual.append({"path": source.relative_to(output).as_posix(), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+          actual.sort(key=lambda item: item["path"])
+          if actual != manifest["finalFiles"] or hashlib.sha256(canonical(actual)).hexdigest() != manifest["finalFilesSHA256"]:
+              raise RuntimeError("Deployed file hashes differ from the approved website")
+          if not (output / "index.html").is_file():
+              raise RuntimeError("Missing final homepage")
+          print(f"Applied {len(changed)} changed files and {len(deleted)} removals; verified all {len(actual)} final website files.")
+          PY
       - name: Upload verified site
         uses: actions/upload-pages-artifact@v4
         with:
