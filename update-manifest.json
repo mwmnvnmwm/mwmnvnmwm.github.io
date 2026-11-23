@@ -1,13 +1,13 @@
 {
   "version": 1,
   "baseZipSHA256": "c376cd38a94996bf619c1f43d33b7b5531f672d377d409de8ea7a29851ecbe28",
-  "zipSHA256": "237b25a028ea12feeef27fde529f3abe7aeec1a5587bf4e537fca1e983c581aa",
-  "zipBytes": 1930395,
+  "zipSHA256": "51e005d33bf659ac9dc8d610c215e00d195122de1168084fec203505c57de947",
+  "zipBytes": 3087555,
   "parts": [
     {
       "file": "updates/part-0001.bin",
-      "bytes": 1930395,
-      "sha256": "237b25a028ea12feeef27fde529f3abe7aeec1a5587bf4e537fca1e983c581aa"
+      "bytes": 3087555,
+      "sha256": "51e005d33bf659ac9dc8d610c215e00d195122de1168084fec203505c57de947"
     }
   ],
   "changedFiles": [
@@ -21,12 +21,19 @@
     "media/asset-019/part-01.jpg",
     "media/asset-019/preview.webp",
     "media/asset-019/thumb.webp",
+    "media/asset-261/info.json",
+    "media/asset-261/overview.webp",
+    "media/asset-261/part-01.jpg",
+    "media/asset-261/preview.webp",
+    "media/asset-261/thumb.webp",
     "media/covers/dawnlands-large.webp",
     "media/covers/dawnlands-small.webp",
     "media/covers/onmyoji-large.webp",
     "media/covers/onmyoji-small.webp",
     "media/covers/pal4-large.webp",
     "media/covers/pal4-small.webp",
+    "media/covers/reunion-large.webp",
+    "media/covers/reunion-small.webp",
     "projects/dawnlands/index.html",
     "projects/jxqy/index.html",
     "projects/onmyoji/index.html",
@@ -186,6 +193,7 @@
     "read/asset-258/index.html",
     "read/asset-259/index.html",
     "read/asset-260/index.html",
+    "read/asset-261/index.html",
     "read/xian-04/index.html",
     "read/xian-05/index.html",
     "read/xian-06/index.html",
@@ -256,13 +264,13 @@
     },
     {
       "path": "fonts/portfolio-sans.woff2",
-      "bytes": 240268,
-      "sha256": "a1e6712e99b3ebce4749f3907a8e9d7364bbffc60be1a8697b301d7b054511b5"
+      "bytes": 240232,
+      "sha256": "5a0e703af4186bfc6b5e96557b8c17f6aeb065af813770e67004f9717dbaaa35"
     },
     {
       "path": "index.html",
-      "bytes": 10513,
-      "sha256": "23c2051ead46fc9f48e85f8cb8adf6679c20b8c1c45830d2ac57d9d558df055d"
+      "bytes": 10514,
+      "sha256": "4209baf2567ac28e2e455600e9a8f1a54f65b8f36200b0a7c7b5595fef606186"
     },
     {
       "path": "media/asset-003/info.json",
@@ -6000,6 +6008,31 @@
       "sha256": "0213dfb9efdad017842dc8ed15f98920a59d4df59fd9f7cfc588e28e42657306"
     },
     {
+      "path": "media/asset-261/info.json",
+      "bytes": 492,
+      "sha256": "052ba129e5166cc0a7db673890fd5a69fb5b1129e7f7f9e35d9d8c0b60182599"
+    },
+    {
+      "path": "media/asset-261/overview.webp",
+      "bytes": 159666,
+      "sha256": "4e995c679db37842f9b103f21953306298fbccaf2785a15380757eff4488b0d9"
+    },
+    {
+      "path": "media/asset-261/part-01.jpg",
+      "bytes": 398182,
+      "sha256": "1c06e7a23c290ebbd4b1b730ccaefa67acef2875be1f1c1c32138e1a633ed0c4"
+    },
+    {
+      "path": "media/asset-261/preview.webp",
+      "bytes": 77908,
+      "sha256": "46c5dd6096444f8ec790e22a385643e473f784648bef45b55bf1af69b638f2b9"
+    },
+    {
+      "path": "media/asset-261/thumb.webp",
+      "bytes": 34512,
+      "sha256": "1d3723823fad1170bad180d20c746024ca7d654938a2d36769871bbce78014ae"
+    },
+    {
       "path": "media/covers/dawnlands-large.webp",
       "bytes": 136250,
       "sha256": "5834bb742a3e85e2616dc2ed17aa4d42310d21da05ba44964634395cac7979e0"
@@ -6041,13 +6074,13 @@
     },
     {
       "path": "media/covers/reunion-large.webp",
-      "bytes": 180466,
-      "sha256": "6eb7c887e84b7686de83963be9d4ee7dafd751e91ba56838281d3ba1a9a18174"
+      "bytes": 268682,
+      "sha256": "ffcd8d951424bf2a0f5dad1ccfb07938db83eda4d3a1faff00abe252e6fc3984"
     },
     {
       "path": "media/covers/reunion-small.webp",
-      "bytes": 153848,
-      "sha256": "9798db18fba169c41802e2e2f2adf52d860ab339b9e5e29d01be7d9f7eede204"
+      "bytes": 216172,
+      "sha256": "a77b0006424e650c77df7732c3148433848b3255e8b4941044815ede1cc6518c"
     },
     {
       "path": "media/video/asset-016.jpg",
@@ -7041,8 +7074,8 @@
     },
     {
       "path": "projects/reunion/index.html",
-      "bytes": 24609,
-      "sha256": "53b4fd951f0e876fe08e02e7a62cc8bde35bd29083fbeb8113b89b37abd6be23"
+      "bytes": 24610,
+      "sha256": "109e09741c604c0a0fa7c3acec1755f160ace0660c9c70ff2f4ba178d8037143"
     },
     {
       "path": "read/asset-003/index.html",
@@ -7815,6 +7848,11 @@
       "sha256": "9d133ec2e99dbd5800f4a992b2f49b41582a9e398a5bd115430e8c1c1bcee23f"
     },
     {
+      "path": "read/asset-261/index.html",
+      "bytes": 3238,
+      "sha256": "771524b162b4061661337a631fee468f952ef9f2f240559ceffb0f35c15c2162"
+    },
+    {
       "path": "read/xian-04/index.html",
       "bytes": 3276,
       "sha256": "e070f3889d05cf0d253836fd3e3427ba109ba6fe214c967129194987ba22660c"
@@ -8016,9 +8054,9 @@
     },
     {
       "path": "styles.css",
-      "bytes": 30606,
-      "sha256": "0b3fc5e3c8ba3e86c4a395154b55d68af0bfd30c914a70784fa1555884b21f91"
+      "bytes": 30640,
+      "sha256": "d3d293514a616a8f3b83523cdae1ee0f2fed7bc6fca507b9b72cb5bd9d715830"
     }
   ],
-  "finalFilesSHA256": "e5757337d5c1f7b8e881b7210f6c4f31d32b8df8e8b10de3b894f2eeb853029d"
+  "finalFilesSHA256": "fd9e49642d65edd47d8fee45465d941607ab01180c4c34e212509a0f8191349e"
 }
